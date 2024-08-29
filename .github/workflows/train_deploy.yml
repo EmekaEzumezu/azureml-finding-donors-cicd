@@ -47,11 +47,27 @@ jobs:
           run_id:  ${{ steps.aml_run.outputs.run_id }}
           experiment_name: ${{ steps.aml_run.outputs.experiment_name }}
 
-    # Deploy model in Azure Machine Learning to ACI
-    - name: Deploy model
-      id: aml_deploy
+    # # Deploy model in Azure Machine Learning to ACI
+    # - name: Deploy model
+    #   id: aml_deploy
+    #   uses: Azure/aml-deploy@v1
+    #   with:
+    #       azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+    #       model_name:  ${{ steps.aml_registermodel.outputs.model_name }}
+    #       model_version: ${{ steps.aml_registermodel.outputs.model_version }}
+
+    # Deploy your model to dev (this is optional)
+    - name: Dev Deploy
+      id: aml_dev_deploy
       uses: Azure/aml-deploy@v1
       with:
           azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
-          model_name:  ${{ steps.aml_registermodel.outputs.model_name }}
-          model_version: ${{ steps.aml_registermodel.outputs.model_version }}
+          model_name:  "${{ steps.aml_registermodel.outputs.model_name }}"
+          model_version: "${{ steps.aml_registermodel.outputs.model_version }}"
+          parameters_file: "deploy_aci.json"
+    
+    - name: Display Aci Deploy Details
+      run: |
+        echo scoring-endpoint: ${{ steps.aml_dev_deploy.outputs.service_scoring_uri}}
+        echo swagger-uri: ${{ steps.aml_dev_deploy.outputs.service_swagger_uri}}
+
